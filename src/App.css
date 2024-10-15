@@ -1,0 +1,23 @@
+.App {
+    display: flex;
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 1rem;
+}
+
+.toggle-sidebar {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .toggle-sidebar {
+        display: block;
+        margin: 1rem;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+}
