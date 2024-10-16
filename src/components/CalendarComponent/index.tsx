@@ -1,103 +1,179 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
-const CalendarLayout = () => {
+const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [view, setView] = useState('month');
+  const [events, setEvents] = useState([
+    { id: 1, title: 'Jai Shree Raam', time: '08:15', duration: 15, date: '2024-10-15' },
+    { id: 2, title: 'Radha 2023', time: '09:30', duration: 30, date: '2024-10-20' },
+    { id: 3, title: 'B Prank', time: '10:00', duration: 15, date: '2024-10-10' },
+    { id: 4, title: 'Arlene McCoy Track', time: '11:15', duration: 45, date: '2024-10-05' },
+    { id: 5, title: 'Office Chill Track', time: '08:45', duration: 60, date: '2024-10-07' },
+    { id: 6, title: 'Jacob Jones', time: '09:45', duration: 30, date: '2024-10-25' },
+    { id: 7, title: 'Kristin Watson', time: '10:15', duration: 45, date: '2024-10-22' },
+    { id: 8, title: 'Esther Track', time: '11:00', duration: 30, date: '2024-10-18' },
+    { id: 9, title: 'Chloe McKinney Hits', time: '12:30', duration: 45, date: '2024-10-28' },
+  ]);
+  
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [newEvent, setNewEvent] = useState({ title: '', time: '', duration: 15, date: '' });
 
-  const events = [
-    { id: 1, title: 'Jai Shree raam', time: '08:00', duration: 60 },
-    { id: 2, title: 'Radha 2023', time: '09:30', duration: 30 },
-    { id: 3, title: 'B Prank', time: '10:00', duration: 15 },
-    { id: 4, title: 'Arlene mccoy track', time: '11:00', duration: 60 },
-    { id: 5, title: 'Office chill track', time: '09:00', duration: 90 },
-    { id: 6, title: 'Jacob Jones', time: '10:00', duration: 30 },
-    { id: 7, title: 'Kristin Watson', time: '10:30', duration: 45 },
-    { id: 8, title: 'Esther Track', time: '11:00', duration: 30 },
-    { id: 9, title: 'Chloe Mckinney Hits', time: '12:30', duration: 45 },
-  ];
+  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
 
-  const hours = Array.from({ length: 24 }, (_, i) => i);
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
+  // Function to navigate the calendar days
+  const navigateMonth = (direction: number) => {
+    setCurrentDate(prevDate => {
+      const newDate = new Date(prevDate);
+      newDate.setMonth(newDate.getMonth() + direction);
+      return newDate;
     });
   };
 
-  const changeDate = (days: number) => {
-    const newDate = new Date(currentDate);
-    newDate.setDate(newDate.getDate() + days);
-    setCurrentDate(newDate);
+  // Function to handle event form submission
+  const handleAddEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    const eventToAdd = {
+      id: events.length + 1,
+      ...newEvent
+    };
+    setEvents([...events, eventToAdd]);
+    setNewEvent({ title: '', time: '', duration: 15, date: '' });
+    setShowEventForm(false);
   };
 
-  const getEventStyle = (event: { id?: number; title?: string; time: any; duration: any; }) => {
-    const startHour = parseInt(event.time.split(':')[0]);
-    const startMinute = parseInt(event.time.split(':')[1]);
-    const top = (startHour * 60 + startMinute) / 15;
-    const height = event.duration / 15;
-    return { top: `${top}px`, height: `${height}px` };
+  // Render month view
+  const renderMonthView = () => {
+    const days = [];
+
+    // Empty spaces for days of previous month
+    for (let i = 0; i < firstDayOfMonth; i++) {
+      days.push(<div key={`empty-${i}`} className="p-2 border border-gray-200"></div>);
+    }
+
+    // Display each day with its events
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateString = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+      const dayEvents = events.filter(event => event.date === dateString);
+
+      days.push(
+        <div key={day} className="p-2 border border-gray-200 relative">
+          <span className="font-bold">{day}</span>
+          {dayEvents.map(event => (
+            <div key={event.id} className="text-xs bg-blue-100 p-1 mt-1 rounded">
+              {event.title} ({event.time})
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    return days;
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100 p-4 w-[75%]">
-      <div className="flex justify-between items-center mb-4">
+    <div className="container mx-auto p-4 bg-white shadow-lg rounded-lg overflow-hidden">
+      <div className="flex justify-between items-center p-4 border-b">
+        {/* Navigation buttons */}
         <div className="flex items-center space-x-2">
-          <button
-            onClick={() => changeDate(-1)}
-            className="p-1 rounded-full hover:bg-gray-200"
-          >
+          <button onClick={() => navigateMonth(-1)} className="p-1 rounded-full hover:bg-gray-200">
             <ChevronLeft size={20} />
           </button>
-          <span className="font-semibold">{formatDate(currentDate)}</span>
-          <button
-            onClick={() => changeDate(1)}
-            className="p-1 rounded-full hover:bg-gray-200"
-          >
+          <span className="text-lg font-semibold">
+            {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+          </span>
+          <button onClick={() => navigateMonth(1)} className="p-1 rounded-full hover:bg-gray-200">
             <ChevronRight size={20} />
           </button>
         </div>
+
+        {/* View selection buttons */}
         <div className="flex space-x-2">
-          <button className="px-3 py-1 bg-gray-200 rounded-md text-sm">
+          <button
+            onClick={() => setView('day')}
+            className={`px-3 py-1 rounded-md ${view === 'day' ? 'bg-yellow-400 text-white' : 'bg-gray-200 text-gray-700'}`}
+          >
             Day
           </button>
-          <button className="px-3 py-1 bg-white rounded-md text-sm">
+          <button
+            onClick={() => setView('week')}
+            className={`px-3 py-1 rounded-md ${view === 'week' ? 'bg-yellow-400 text-white' : 'bg-gray-200 text-gray-700'}`}
+          >
             Week
           </button>
-          <button className="px-3 py-1 bg-white rounded-md text-sm">
+          <button
+            onClick={() => setView('month')}
+            className={`px-3 py-1 rounded-md ${view === 'month' ? 'bg-yellow-400 text-white' : 'bg-gray-200 text-gray-700'}`}
+          >
             Month
           </button>
         </div>
-        <button className="flex items-center space-x-1 bg-yellow-400 text-white px-3 py-1 rounded-md">
-          <Plus size={16} />
-          <span className="text-sm">Schedule session</span>
+
+        {/* Schedule session button */}
+        <button
+          onClick={() => setShowEventForm(true)}
+          className="px-4 py-2 bg-yellow-400 text-white rounded-md hover:bg-yellow-500 flex items-center"
+        >
+          <Plus size={20} className="mr-1" /> Schedule Session
         </button>
       </div>
-      <div className="flex-1 overflow-y-auto">
-        <div className="relative bg-white rounded-lg shadow">
-          {hours.map((hour) => (
-            <div key={hour} className="flex border-t border-gray-200">
-              <div className="w-16 py-2 text-right pr-2 text-xs text-gray-500">
-                {hour.toString().padStart(2, '0')}:00
-              </div>
-              <div className="flex-1 h-15 relative"></div>
-            </div>
-          ))}
-          {events.map((event) => (
-            <div
-              key={event.id}
-              className="absolute left-16 right-0 bg-blue-100 border-l-4 border-blue-500 p-1 text-xs overflow-hidden"
-              style={getEventStyle(event)}
-            >
-              {event.title}
-            </div>
-          ))}
-        </div>
+
+      {/* Calendar month view */}
+      <div className="grid grid-cols-7 gap-2 h-[600px] overflow-y-auto">
+        {renderMonthView()}
       </div>
+
+      {/* Add Event Form */}
+      {showEventForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-4 rounded-lg">
+            <h2 className="text-xl font-bold mb-4">Schedule Session</h2>
+            <form onSubmit={handleAddEvent} className="space-y-4">
+              <input
+                type="text"
+                placeholder="Session Title"
+                value={newEvent.title}
+                onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                className="w-full p-2 border rounded"
+                required
+              />
+              <input
+                type="date"
+                value={newEvent.date}
+                onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
+                className="w-full p-2 border rounded"
+                required
+              />
+              <input
+                type="time"
+                value={newEvent.time}
+                onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
+                className="w-full p-2 border rounded"
+                required
+              />
+              <input
+                type="number"
+                placeholder="Duration (minutes)"
+                value={newEvent.duration}
+                onChange={(e) => setNewEvent({ ...newEvent, duration: parseInt(e.target.value) })}
+                className="w-full p-2 border rounded"
+                required
+              />
+              <div className="flex justify-end space-x-2">
+                <button type="button" onClick={() => setShowEventForm(false)} className="px-4 py-2 bg-gray-300 rounded">
+                  Cancel
+                </button>
+                <button type="submit" className="px-4 py-2 bg-yellow-400 text-white rounded">
+                  Schedule
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default CalendarLayout;
+export default Calendar;

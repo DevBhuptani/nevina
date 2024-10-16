@@ -1,4 +1,4 @@
-import CalendarComponent from './components/CalendarComponent';
+import Calendar from './components/CalendarComponent';
 import CalendarScheduleComponent from './components/CalendarScheduleComponent';
 import Footer from './components/Footer';
 import Sidebar from './components/Sidebar';
@@ -8,7 +8,7 @@ function App() {
     <div className="flex">
       <Sidebar />
       <div className="flex p-4 w-full">
-        <CalendarComponent />
+        <Calendar />
         <CalendarScheduleComponent />
       </div>
       <Footer />
